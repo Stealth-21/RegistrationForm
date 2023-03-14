@@ -24,41 +24,12 @@ const loadData = () => {
 };
 
 // Save data to web storage
-const saveData = (user) => {
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  users.push(user);
+const saveData = (users) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
-// Handle form submit event
-const submitListener = (event) => {
-  event.preventDefault();
-  const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-  const dob = dobInput.value.trim();
-  const terms = termsCheckbox.checked;
-
-  // Validate date of birth
-  const today = new Date();
-  const dobDate = new Date(dob);
-  const age = today.getFullYear() - dobDate.getFullYear();
-  if (age < 18 || age > 55) {
-    alert("You must be between 18 and 55 years old to register.");
-    return;
-  }
-
-  // Create new user object
-  const user = {
-    name,
-    email,
-    password,
-    dob,
-    terms,
-  };
-
-  // Save user to web storage and add to table
-  saveData(user);
+// Add a new user to the table and storage
+const addUser = (user) => {
   const row = document.createElement("tr");
   row.innerHTML = `
     <td>${user.name}</td>
@@ -69,9 +40,42 @@ const submitListener = (event) => {
   `;
   userData.appendChild(row);
 
-  // Reset form
-  form.reset();
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users.push(user);
+  saveData(users);
 };
 
-// Load saved data on page load
-loadData();
+// Form submission listener
+const submitListener = (event) => {
+  event.preventDefault();
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+  const dob = dobInput.value;
+  const terms = termsCheckbox.checked;
+
+  // Additional validation for date of birth
+  const dobDate = new Date(dob);
+  const dobYear = dobDate.getFullYear();
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const age = currentYear - dobYear;
+  if (age < 18 || age > 55) {
+    alert("Please enter a valid date of birth between ages 18 and 55.");
+    return;
+  }
+
+  // Add user to table and storage
+  const user = { name, email, password, dob, terms };
+  addUser(user);
+
+  // Reset form
+  form.reset();
+  nameInput.focus();
+};
+
+// Load data from storage when page is loaded
+window.addEventListener("load", () => {
+  loadData();
+});
